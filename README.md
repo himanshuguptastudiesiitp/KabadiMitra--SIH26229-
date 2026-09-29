@@ -13,7 +13,7 @@ Languages: Hindi (default), English
 ## Setup
 
 ```bash
-flutter create . --project-name kabadiwala_connect --platforms=android
+flutter create . --project-name kabadi_mitra --platforms=android
 flutter pub get
 ```
 
@@ -26,8 +26,6 @@ In android/app/src/main/AndroidManifest.xml inside manifest, above application:
 <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
 ```
-
-Set android:label="KabadiMitra" on the application tag.
 
 ## Run
 
