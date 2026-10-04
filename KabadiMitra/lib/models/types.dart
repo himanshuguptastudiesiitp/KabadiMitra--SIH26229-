@@ -17,7 +17,7 @@ enum PayMethod { cash, upi }
 
 enum PaymentStatus { none, pending, paid }
 
-enum Lang { hi, en }
+enum Lang { hi, mr, en }
 
 class Lot {
   final String id;

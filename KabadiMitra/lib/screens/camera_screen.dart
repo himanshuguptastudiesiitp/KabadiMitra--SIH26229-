@@ -47,34 +47,23 @@ class _CameraScreenState extends State<CameraScreen> {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceAlt,
+                  color: ThemeX.surfaceAlt(context),
+                  border: Border.all(color: ThemeX.line(context)),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: preview != null
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(16),
-                        child: Image.file(
-                          File(preview!),
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) {
-                            return const Center(
-                              child: Icon(Icons.image, size: 64, color: AppColors.muted),
-                            );
-                          },
-                        ),
+                        child: Image.file(File(preview!), fit: BoxFit.cover, errorBuilder: (_, __, ___) {
+                          return const Center(child: Icon(Icons.image, size: 64, color: AppColors.muted));
+                        }),
                       )
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Icon(Icons.camera_alt, size: 56, color: AppColors.muted),
                           const SizedBox(height: 8),
-                          Text(
-                            I18n.t(lang, "noPhoto"),
-                            style: const TextStyle(
-                              color: AppColors.muted,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          Text(I18n.t(lang, "noPhoto"), style: const TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
                         ],
                       ),
               ),

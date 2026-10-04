@@ -28,97 +28,109 @@ class RecyclersScreen extends StatelessWidget {
       lot = store.activeLot;
     }
 
+    final String? currentLotId = lot?.id;
+    final String? selectedRecyclerId = lot?.recyclerId;
+    final MaterialId? currentCategory = lot?.category;
+    final double? currentWeight = lot?.weightKg;
+    final double? currentValue = lot?.estimatedValue;
+
     return Scaffold(
       appBar: AppBar(title: Text(I18n.t(lang, "recyclers"))),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           ScreenTitle(title: I18n.t(lang, "recyclers")),
-          if (lot != null) ...[
+          if (currentCategory != null && currentWeight != null && currentValue != null) ...[
             const SizedBox(height: 8),
             Text(
-              "${I18n.materialLabel(lang, lot.category)} · ${lot.weightKg} kg · ${inr(lot.estimatedValue)}",
+              "${I18n.materialLabel(lang, currentCategory)} · $currentWeight ${I18n.t(lang, "kgUnit")} · ${inr(currentValue)}",
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
           const SizedBox(height: 12),
           ...recyclers.map((r) {
-            final selected = lot?.recyclerId == r.id;
-            final price = lot != null
-                ? (lot.weightKg * (rateFor(lot.category).ratePerKg + r.rateBonus)).round()
+            final selected = selectedRecyclerId == r.id;
+            final int price = (currentWeight != null && currentCategory != null)
+                ? (currentWeight * (rateFor(currentCategory).ratePerKg + r.rateBonus)).round()
                 : 0;
-            final currentLot = lot;
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: AppCard(
-                onTap: currentLot == null
+                selected: selected,
+                onTap: currentLotId == null
                     ? null
                     : () {
-                        store.offerLot(currentLot.id, r.id, price.toDouble());
+                        final String? id = currentLotId;
+                        if (id == null) return;
+                        store.offerLot(id, r.id, price.toDouble());
                       },
-                child: Container(
-                  decoration: selected
-                      ? BoxDecoration(
-                          border: Border.all(color: AppColors.primary, width: 2),
-                          borderRadius: BorderRadius.circular(10),
-                        )
-                      : null,
-                  padding: selected ? const EdgeInsets.all(4) : EdgeInsets.zero,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
                             r.name,
-                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-                          ),
-                          if (r.authorized)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AppColors.success.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text(
-                                "Authorized",
-                                style: TextStyle(
-                                  color: AppColors.success,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16,
+                              color: ThemeX.ink(context),
                             ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(kmLabel(r.km), style: Theme.of(context).textTheme.bodyMedium),
-                      if (currentLot != null)
-                        Text(
-                          inr(price),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 18,
-                            color: AppColors.primary,
                           ),
                         ),
-                    ],
-                  ),
+                        if (r.authorized)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.success.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              I18n.t(lang, "authorized"),
+                              style: const TextStyle(
+                                color: AppColors.success,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      kmLabel(r.km, I18n.t(lang, "kmUnit")),
+                      style: TextStyle(color: ThemeX.muted(context)),
+                    ),
+                    if (currentLotId != null)
+                      Text(
+                        inr(price),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                          color: selected
+                              ? (ThemeX.isDark(context) ? AppColors.primaryLight : AppColors.primary)
+                              : AppColors.primary,
+                        ),
+                      ),
+                  ],
                 ),
               ),
             );
           }),
-          if (lot != null && lot.recyclerId != null) ...[
+          if (currentLotId != null && selectedRecyclerId != null) ...[
             const SizedBox(height: 12),
             BigButton(
               label: I18n.t(lang, "handover"),
               onPressed: () {
-                final current = lot!;
-                store.acceptOffer(current.id);
+                final String id = currentLotId;
+                store.acceptOffer(id);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => HandoverScreen(lotId: current.id)),
+                  MaterialPageRoute(builder: (_) => HandoverScreen(lotId: id)),
                 );
               },
             ),

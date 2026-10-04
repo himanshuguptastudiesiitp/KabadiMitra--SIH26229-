@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/types.dart';
 import '../services/app_store.dart';
 import '../services/mock_data.dart';
 import '../theme/app_theme.dart';
@@ -14,12 +15,10 @@ class AdminScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = context.watch<AppStore>();
     final lang = store.language;
-
-    final byMaterial = <String, double>{};
-    for (final lot in store.lots) {
-      final key = lot.category.name;
-      byMaterial[key] = (byMaterial[key] ?? 0) + lot.weightKg;
-    }
+    final kg = store.lots.fold(0.0, (s, l) => s + l.weightKg);
+    final cash = store.lots
+        .where((l) => l.paymentStatus == PaymentStatus.paid)
+        .fold(0.0, (s, l) => s + l.amount);
 
     return Scaffold(
       appBar: AppBar(title: Text(I18n.t(lang, "adminDesk"))),
@@ -28,91 +27,64 @@ class AdminScreen extends StatelessWidget {
         children: [
           ScreenTitle(title: I18n.t(lang, "adminDesk")),
           const SizedBox(height: 12),
+          PipelineStrip(lang: lang, current: LotStatusLike.paid),
+          const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(
-                child: AppCard(
-                  child: Column(
-                    children: [
-                      Text(
-                        "${store.lots.length}",
-                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
-                      ),
-                      Text(I18n.t(lang, "lots"), style: Theme.of(context).textTheme.bodyMedium),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: AppCard(
-                  child: Column(
-                    children: [
-                      Text(
-                        "${recyclers.length}",
-                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
-                      ),
-                      Text(I18n.t(lang, "recyclers"), style: Theme.of(context).textTheme.bodyMedium),
-                    ],
-                  ),
-                ),
-              ),
+              _Stat(I18n.t(lang, "lots"), "${store.lots.length}"),
+              const SizedBox(width: 8),
+              _Stat(I18n.t(lang, "kgUnit"), kg.toStringAsFixed(0)),
+              const SizedBox(width: 8),
+              _Stat(I18n.t(lang, "paidDone"), inr(cash)),
             ],
           ),
           const SizedBox(height: 16),
-          Text("Material flow", style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
-          if (byMaterial.isEmpty)
-            Text(I18n.t(lang, "noLots"), style: Theme.of(context).textTheme.bodyMedium)
-          else
-            ...byMaterial.entries.map(
-              (e) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: AppCard(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(e.key.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w700)),
-                      Text(
-                        "${e.value.toStringAsFixed(1)} kg",
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          const SizedBox(height: 16),
-          Text(I18n.t(lang, "recentLots"), style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
-          ...store.lots.take(10).map(
-            (lot) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: AppCard(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(lot.id, style: const TextStyle(fontWeight: FontWeight.w700)),
-                          Text(
-                            "${I18n.materialLabel(lang, lot.category)} · ${lot.weightKg} kg",
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ],
-                      ),
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(I18n.t(lang, "materialFlow"), style: const TextStyle(fontWeight: FontWeight.w800)),
+                const SizedBox(height: 8),
+                ...priceBoard.map((row) {
+                  final n = store.lots
+                      .where((l) => l.category == row.category)
+                      .fold(0.0, (s, l) => s + l.weightKg);
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(I18n.materialLabel(lang, row.category)),
+                        Text("${n.toStringAsFixed(1)} ${I18n.t(lang, "kgUnit")}",
+                            style: const TextStyle(fontWeight: FontWeight.w700)),
+                      ],
                     ),
-                    Text(inr(lot.amount), style: const TextStyle(fontWeight: FontWeight.w800)),
-                  ],
-                ),
-              ),
+                  );
+                }),
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _Stat extends StatelessWidget {
+  final String label;
+  final String value;
+  const _Stat(this.label, this.value);
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: AppCard(
+        child: Column(
+          children: [
+            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text(label, style: Theme.of(context).textTheme.bodyMedium),
+          ],
+        ),
       ),
     );
   }

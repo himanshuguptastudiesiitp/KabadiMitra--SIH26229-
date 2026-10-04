@@ -25,16 +25,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _go() {
+  void _register() {
     final store = context.read<AppStore>();
     if (nameCtrl.text.trim().isNotEmpty) {
       store.setDisplayName(nameCtrl.text.trim());
     }
     store.seedDemo();
     Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const OnboardingScreen()),
-    );
+        context, MaterialPageRoute(builder: (_) => const OnboardingScreen()));
   }
 
   @override
@@ -45,7 +43,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          ScreenTitle(title: I18n.t(lang, "register")),
+          ScreenTitle(title: I18n.t(lang, "register"), sub: I18n.t(lang, "loginSub")),
           const SizedBox(height: 20),
           TextField(
             controller: nameCtrl,
@@ -73,7 +71,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          BigButton(label: I18n.t(lang, "next"), onPressed: _go),
+          BigButton(label: I18n.t(lang, "newAccount"), onPressed: _register),
         ],
       ),
     );

@@ -1,0 +1,30 @@
+Kabadi Mitra — Android Flutter prototype
+========================================
+
+Languages: Hindi, Marathi, English
+Home button: कबाड़ जोड़ें / कबाड जोडा / Add scrap
+
+1) Unzip this folder.
+
+2) In Terminal (Mac):
+   cd ~/Desktop/SIH/PS26229
+   (copy the unzipped lib/ and pubspec.yaml into that folder if you already have android/)
+
+   OR if this is a fresh copy:
+   cd path/to/Kabadi_Mitra_Flutter
+   flutter create . --project-name kabadiwala_connect --platforms=android
+
+3) Add camera permissions in:
+   android/app/src/main/AndroidManifest.xml
+
+   Inside <manifest>, ABOVE <application>, paste:
+
+   <uses-permission android:name="android.permission.CAMERA" />
+   <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+
+4) Start Pixel emulator in Android Studio (Device Manager → Play).
+
+5) Run:
+   flutter pub get
+   flutter run

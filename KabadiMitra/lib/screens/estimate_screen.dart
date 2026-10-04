@@ -39,18 +39,12 @@ class EstimateScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  I18n.materialLabel(lang, lot.category),
-                  style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  inr(lot.estimatedValue),
-                  style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800),
-                ),
-                Text(
-                  "${lot.weightKg} kg · ${inr(lot.ratePerKg)}${I18n.t(lang, "perKg")}",
-                  style: const TextStyle(color: Colors.white70),
-                ),
+                Text(I18n.materialLabel(lang, lot.category),
+                    style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600)),
+                Text(inr(lot.estimatedValue),
+                    style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
+                Text("${lot.weightKg} ${I18n.t(lang, "kgUnit")} · ${inr(lot.ratePerKg)}${I18n.t(lang, "perKg")}",
+                    style: const TextStyle(color: Colors.white70)),
               ],
             ),
           ),
@@ -59,10 +53,10 @@ class EstimateScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Street rate", style: Theme.of(context).textTheme.bodyMedium),
+                Text(I18n.t(lang, "streetRate"), style: Theme.of(context).textTheme.bodyMedium),
                 Text(inr(street), style: Theme.of(context).textTheme.headlineMedium),
                 Text(
-                  "Better by ${inr(lot.estimatedValue - street)}",
+                  "${I18n.t(lang, "betterBy")} ${inr(lot.estimatedValue - street)}",
                   style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.w700),
                 ),
               ],

@@ -16,84 +16,114 @@ class OnboardingScreen extends StatelessWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
+        child: ListView(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 24),
-              Text(I18n.t(lang, "pickRole"), style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 20),
-              _RoleCard(
-                title: I18n.t(lang, "roleCollector"),
-                icon: Icons.pedal_bike,
-                selected: store.role == UserRole.collector,
-                onTap: () => store.setRole(UserRole.collector),
-              ),
-              const SizedBox(height: 10),
-              _RoleCard(
-                title: I18n.t(lang, "roleRecycler"),
-                icon: Icons.store,
-                selected: store.role == UserRole.recycler,
-                onTap: () => store.setRole(UserRole.recycler),
-              ),
-              const SizedBox(height: 10),
-              _RoleCard(
-                title: I18n.t(lang, "roleAdmin"),
-                icon: Icons.admin_panel_settings,
-                selected: store.role == UserRole.admin,
-                onTap: () => store.setRole(UserRole.admin),
-              ),
-              const Spacer(),
-              BigButton(
-                label: I18n.t(lang, "next"),
-                onPressed: () {
-                  store.completeOnboarding();
-                  Navigator.pushReplacementNamed(context, "/home");
-                },
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
+          children: [
+            Text(I18n.t(lang, "appName"), style: Theme.of(context).textTheme.headlineLarge),
+            Text(I18n.t(lang, "chainSub"), style: Theme.of(context).textTheme.bodyMedium),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _LangMini(Lang.hi, "हिंदी", store),
+                const SizedBox(width: 8),
+                _LangMini(Lang.mr, "मराठी", store),
+                const SizedBox(width: 8),
+                _LangMini(Lang.en, "EN", store),
+              ],
+            ),
+            const SizedBox(height: 16),
+            PipelineStrip(lang: lang, current: LotStatusLike.collected),
+            const SizedBox(height: 16),
+            ...List.generate(8, (i) {
+              const steps = [
+                "step1",
+                "step2",
+                "step3",
+                "step4",
+                "step5",
+                "step6",
+                "step7",
+                "step8",
+              ];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 12,
+                      backgroundColor: AppColors.primary,
+                      child: Text("${i + 1}",
+                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(I18n.t(lang, steps[i]),
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
+                    ),
+                  ],
+                ),
+              );
+            }),
+            const SizedBox(height: 16),
+            Text(I18n.t(lang, "pickRole"), style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                _RoleChip(UserRole.collector, I18n.t(lang, "roleCollector"), store),
+                const SizedBox(width: 8),
+                _RoleChip(UserRole.recycler, I18n.t(lang, "roleRecycler"), store),
+                const SizedBox(width: 8),
+                _RoleChip(UserRole.admin, I18n.t(lang, "roleAdmin"), store),
+              ],
+            ),
+            const SizedBox(height: 24),
+            BigButton(
+              label: I18n.t(lang, "next"),
+              onPressed: () {
+                store.completeOnboarding();
+                store.seedDemo();
+                Navigator.pushReplacementNamed(context, "/home");
+              },
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _RoleCard extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
-  const _RoleCard({
-    required this.title,
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
+class _RoleChip extends StatelessWidget {
+  final UserRole role;
+  final String label;
+  final AppStore store;
+  const _RoleChip(this.role, this.label, this.store);
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      onTap: onTap,
-      child: Row(
-        children: [
-          Icon(icon, color: selected ? AppColors.primary : AppColors.muted, size: 28),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-                fontSize: 16,
-                color: selected ? AppColors.primary : null,
-              ),
-            ),
-          ),
-          if (selected) const Icon(Icons.check_circle, color: AppColors.primary),
-        ],
-      ),
+    final selected = store.role == role;
+    return SelectChip(
+      label: label,
+      selected: selected,
+      expanded: true,
+      onTap: () => store.setRole(role),
+    );
+  }
+}
+
+class _LangMini extends StatelessWidget {
+  final Lang lang;
+  final String label;
+  final AppStore store;
+  const _LangMini(this.lang, this.label, this.store);
+
+  @override
+  Widget build(BuildContext context) {
+    final on = store.language == lang;
+    return SelectChip(
+      label: label,
+      selected: on,
+      expanded: true,
+      onTap: () => store.setLanguage(lang),
     );
   }
 }

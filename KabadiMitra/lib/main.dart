@@ -23,11 +23,11 @@ class KabadiwalaApp extends StatelessWidget {
       child: Consumer<AppStore>(
         builder: (context, store, _) {
           return MaterialApp(
-            title: 'KabadiMitra',
+            title: 'Kabadi Mitra',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.light,
             darkTheme: AppTheme.dark,
-            themeMode: store.isDark ? ThemeMode.dark : ThemeMode.light,
+            themeMode: store.darkMode ? ThemeMode.dark : ThemeMode.light,
             home: const LoginScreen(),
             routes: {
               "/home": (_) => const MainShell(),

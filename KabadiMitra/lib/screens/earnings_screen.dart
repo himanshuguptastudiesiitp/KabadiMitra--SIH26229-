@@ -14,8 +14,10 @@ class EarningsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = context.watch<AppStore>();
     final lang = store.language;
-    final paidLots = store.lots.where((l) => l.paymentStatus == PaymentStatus.paid).toList();
-    final total = paidLots.fold(0.0, (s, l) => s + l.amount);
+    final paid = store.lots.where((l) => l.paymentStatus == PaymentStatus.paid).toList();
+    final pending = store.lots.where((l) => l.paymentStatus == PaymentStatus.pending).toList();
+    final paidSum = paid.fold(0.0, (s, l) => s + l.amount);
+    final pendingSum = pending.fold(0.0, (s, l) => s + l.amount);
 
     return Scaffold(
       appBar: AppBar(title: Text(I18n.t(lang, "earnings"))),
@@ -24,58 +26,80 @@ class EarningsScreen extends StatelessWidget {
         children: [
           ScreenTitle(title: I18n.t(lang, "earnings")),
           const SizedBox(height: 12),
-          AppCard(
-            color: AppColors.primary,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  I18n.t(lang, "earnings"),
-                  style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  inr(total),
-                  style: const TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(I18n.t(lang, "history"), style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
-          if (paidLots.isEmpty)
-            Text(I18n.t(lang, "noLots"), style: Theme.of(context).textTheme.bodyMedium)
-          else
-            ...paidLots.map(
-              (lot) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+          Row(
+            children: [
+              Expanded(
                 child: AppCard(
-                  child: Row(
+                  color: AppColors.primary,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              I18n.materialLabel(lang, lot.category),
-                              style: const TextStyle(fontWeight: FontWeight.w700),
-                            ),
-                            Text(
-                              "${lot.weightKg} kg · ${shortDate(lot.createdAt)}",
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        inr(lot.amount),
-                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-                      ),
+                      Text(I18n.t(lang, "paidDone"), style: const TextStyle(color: Colors.white70)),
+                      Text(inr(paidSum),
+                          style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800)),
                     ],
                   ),
                 ),
               ),
-            ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: AppCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(I18n.t(lang, "pendingPay"), style: Theme.of(context).textTheme.bodyMedium),
+                      Text(inr(pendingSum),
+                          style: const TextStyle(
+                              color: AppColors.warning, fontSize: 26, fontWeight: FontWeight.w800)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Text(I18n.t(lang, "history"), style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 8),
+          ...[...paid, ...pending].map((lot) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: AppCard(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(I18n.materialLabel(lang, lot.category),
+                              style: const TextStyle(fontWeight: FontWeight.w700)),
+                          Text(
+                            "${shortDate(lot.createdAt)} · ${lot.paymentMethod == PayMethod.cash ? I18n.t(lang, "cash") : I18n.t(lang, "upi")}",
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(inr(lot.amount),
+                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+                          Text(
+                            lot.paymentStatus == PaymentStatus.paid
+                                ? I18n.t(lang, "paidDone")
+                                : I18n.t(lang, "pendingPay"),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: lot.paymentStatus == PaymentStatus.paid
+                                  ? AppColors.success
+                                  : AppColors.warning,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              )),
         ],
       ),
     );

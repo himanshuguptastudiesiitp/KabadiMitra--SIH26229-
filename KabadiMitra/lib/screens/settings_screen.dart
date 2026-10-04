@@ -31,6 +31,8 @@ class SettingsScreen extends StatelessWidget {
                   children: [
                     _LangBtn(Lang.hi, "हिंदी", store),
                     const SizedBox(width: 8),
+                    _LangBtn(Lang.mr, "मराठी", store),
+                    const SizedBox(width: 8),
                     _LangBtn(Lang.en, "English", store),
                   ],
                 ),
@@ -56,7 +58,7 @@ class SettingsScreen extends StatelessWidget {
             child: Row(
               children: [
                 Icon(
-                  store.isDark ? Icons.dark_mode : Icons.light_mode,
+                  store.darkMode ? Icons.dark_mode : Icons.light_mode,
                   color: AppColors.primary,
                 ),
                 const SizedBox(width: 12),
@@ -66,16 +68,16 @@ class SettingsScreen extends StatelessWidget {
                     children: [
                       Text(I18n.t(lang, "themeTitle"), style: const TextStyle(fontWeight: FontWeight.w800)),
                       Text(
-                        store.isDark ? "Dark" : "Default",
-                        style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
+                        store.darkMode ? I18n.t(lang, "darkTheme") : I18n.t(lang, "defaultTheme"),
+                        style: const TextStyle(color: AppColors.muted),
                       ),
                     ],
                   ),
                 ),
                 Switch(
-                  value: store.isDark,
+                  value: store.darkMode,
                   activeThumbColor: AppColors.primary,
-                  onChanged: store.setDark,
+                  onChanged: store.setDarkMode,
                 ),
               ],
             ),
@@ -95,25 +97,11 @@ class _LangBtn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final on = store.language == lang;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => store.setLanguage(lang),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: on ? AppColors.primary : Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              color: on ? Colors.white : Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-        ),
-      ),
+    return SelectChip(
+      label: label,
+      selected: on,
+      expanded: true,
+      onTap: () => store.setLanguage(lang),
     );
   }
 }
