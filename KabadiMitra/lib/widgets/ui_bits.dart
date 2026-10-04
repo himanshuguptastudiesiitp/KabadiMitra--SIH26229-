@@ -1,7 +1,28 @@
 import 'package:flutter/material.dart';
+import '../models/types.dart';
 import '../theme/app_theme.dart';
+import '../utils/i18n.dart';
 
-enum LotStatusLike { collected, identified, valued, matched, handover }
+/// Theme-aware colors so light + dark both stay readable.
+class ThemeX {
+  static bool isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  static Color surface(BuildContext context) =>
+      isDark(context) ? AppColors.darkSurface : AppColors.surface;
+
+  static Color surfaceAlt(BuildContext context) =>
+      isDark(context) ? AppColors.darkSurfaceAlt : AppColors.surfaceAlt;
+
+  static Color ink(BuildContext context) =>
+      isDark(context) ? AppColors.darkInk : AppColors.ink;
+
+  static Color muted(BuildContext context) =>
+      isDark(context) ? AppColors.darkMuted : AppColors.muted;
+
+  static Color line(BuildContext context) =>
+      isDark(context) ? AppColors.darkLine : AppColors.line;
+}
 
 class ScreenTitle extends StatelessWidget {
   final String title;
@@ -26,30 +47,91 @@ class ScreenTitle extends StatelessWidget {
 class AppCard extends StatelessWidget {
   final Widget child;
   final Color? color;
+  final EdgeInsets? padding;
   final VoidCallback? onTap;
-  const AppCard({super.key, required this.child, this.color, this.onTap});
+  final bool selected;
+
+  const AppCard({
+    super.key,
+    required this.child,
+    this.color,
+    this.padding,
+    this.onTap,
+    this.selected = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final bg = color ?? Theme.of(context).cardTheme.color ?? AppColors.surface;
-    final content = Container(
+    final bg = color ?? ThemeX.surface(context);
+    final borderColor = selected ? AppColors.primary : ThemeX.line(context);
+    final card = Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: padding ?? const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: bg,
+        color: selected
+            ? (ThemeX.isDark(context)
+                ? AppColors.primary.withValues(alpha: 0.22)
+                : AppColors.primary.withValues(alpha: 0.08))
+            : bg,
         borderRadius: BorderRadius.circular(12),
-        border: color == null
-            ? Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.2))
-            : null,
+        border: Border.all(color: borderColor, width: selected ? 2 : 1),
       ),
       child: child,
     );
-    if (onTap == null) return content;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: content,
+    if (onTap != null) {
+      return InkWell(onTap: onTap, borderRadius: BorderRadius.circular(12), child: card);
+    }
+    return card;
+  }
+}
+
+/// Chip / pill used for material type, payment method, language, role, etc.
+/// Always readable in light and dark (selected + unselected).
+class SelectChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback? onTap;
+  final bool expanded;
+
+  const SelectChip({
+    super.key,
+    required this.label,
+    required this.selected,
+    this.onTap,
+    this.expanded = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = selected
+        ? AppColors.primary
+        : ThemeX.surfaceAlt(context);
+    final fg = selected ? Colors.white : ThemeX.ink(context);
+    final border = selected ? AppColors.primary : ThemeX.line(context);
+
+    final child = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: border, width: selected ? 2 : 1),
+      ),
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+          color: fg,
+        ),
+      ),
     );
+
+    final tappable = GestureDetector(onTap: onTap, child: child);
+    if (expanded) return Expanded(child: tappable);
+    return tappable;
   }
 }
 
@@ -58,6 +140,7 @@ class BigButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool primary;
   final IconData? icon;
+
   const BigButton({
     super.key,
     required this.label,
@@ -68,91 +151,86 @@ class BigButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (primary) {
-      return SizedBox(
-        width: double.infinity,
-        height: 52,
-        child: ElevatedButton.icon(
-          onPressed: onPressed,
-          icon: icon != null ? Icon(icon, size: 20) : const SizedBox.shrink(),
-          label: Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            elevation: 0,
-          ),
-        ),
-      );
-    }
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: OutlinedButton.icon(
-        onPressed: onPressed,
-        icon: icon != null ? Icon(icon, size: 20) : const SizedBox.shrink(),
-        label: Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      ),
+    final child = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (icon != null) ...[Icon(icon, size: 20), const SizedBox(width: 8)],
+        Text(label),
+      ],
     );
+    if (primary) {
+      return ElevatedButton(onPressed: onPressed, child: child);
+    }
+    return OutlinedButton(onPressed: onPressed, child: child);
   }
 }
 
 class PipelineStrip extends StatelessWidget {
   final LotStatusLike current;
-  const PipelineStrip({super.key, required this.current});
+  final Lang lang;
+  const PipelineStrip({super.key, required this.current, required this.lang});
 
-  static const steps = ["COLLECT", "IDENTIFY", "VALUE", "MATCH", "HANDOVER"];
+  static const _keys = ["pipeCollect", "pipeIdentify", "pipeValue", "pipeMatch", "pipeHandover"];
 
-  int get _index {
+  int get _idx {
     switch (current) {
       case LotStatusLike.collected:
         return 0;
       case LotStatusLike.identified:
         return 1;
       case LotStatusLike.valued:
+      case LotStatusLike.offered:
         return 2;
-      case LotStatusLike.matched:
+      case LotStatusLike.accepted:
         return 3;
-      case LotStatusLike.handover:
+      default:
         return 4;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final idx = _index;
-    return Row(
-      children: List.generate(steps.length, (i) {
-        final on = i <= idx;
-        return Expanded(
-          child: Column(
-            children: [
-              Container(
-                height: 4,
-                margin: const EdgeInsets.symmetric(horizontal: 2),
-                decoration: BoxDecoration(
-                  color: on ? AppColors.primary : AppColors.muted.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
+    final idx = _idx;
+    return AppCard(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(_keys.length, (i) {
+          final active = i <= idx;
+          return Expanded(
+            child: Column(
+              children: [
+                CircleAvatar(
+                  radius: 14,
+                  backgroundColor: active ? AppColors.primary : ThemeX.surfaceAlt(context),
+                  child: Text(
+                    "${i + 1}",
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: active ? Colors.white : ThemeX.muted(context),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                steps[i],
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w700,
-                  color: on ? AppColors.primary : AppColors.muted,
+                const SizedBox(height: 4),
+                Text(
+                  I18n.t(lang, _keys[i]),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                    color: active ? AppColors.primary : ThemeX.muted(context),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        );
-      }),
+              ],
+            ),
+          );
+        }),
+      ),
     );
   }
 }
+
+enum LotStatusLike { collected, identified, valued, offered, accepted, handover, paid }

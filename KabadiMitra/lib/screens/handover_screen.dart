@@ -23,9 +23,15 @@ class _HandoverScreenState extends State<HandoverScreen> {
   Widget build(BuildContext context) {
     final store = context.watch<AppStore>();
     final lang = store.language;
+    if (store.lots.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: Text(I18n.t(lang, "handover"))),
+        body: Center(child: Text(I18n.t(lang, "noLots"))),
+      );
+    }
     final lot = store.lots.firstWhere(
       (l) => l.id == widget.lotId,
-      orElse: () => store.lots.isNotEmpty ? store.lots.first : throw StateError('No lots'),
+      orElse: () => store.lots.first,
     );
     Recycler? rec;
     try {
@@ -45,19 +51,21 @@ class _HandoverScreenState extends State<HandoverScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  I18n.materialLabel(lang, lot.category),
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-                ),
-                Text(
-                  "${lot.weightKg} kg · ${rec?.name ?? ""}",
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
+                Text(I18n.materialLabel(lang, lot.category),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 18,
+                      color: ThemeX.ink(context),
+                    )),
+                Text("${lot.weightKg} ${I18n.t(lang, "kgUnit")} · ${rec?.name ?? ""}",
+                    style: Theme.of(context).textTheme.bodyMedium),
                 const SizedBox(height: 8),
-                Text(
-                  inr(lot.amount),
-                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800),
-                ),
+                Text(inr(lot.amount),
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      color: ThemeX.ink(context),
+                    )),
               ],
             ),
           ),
@@ -66,30 +74,18 @@ class _HandoverScreenState extends State<HandoverScreen> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(
-                child: ChoiceChip(
-                  label: Text(I18n.t(lang, "cash")),
-                  selected: method == PayMethod.cash,
-                  selectedColor: AppColors.primary,
-                  labelStyle: TextStyle(
-                    color: method == PayMethod.cash ? Colors.white : AppColors.ink,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  onSelected: (_) => setState(() => method = PayMethod.cash),
-                ),
+              SelectChip(
+                label: I18n.t(lang, "cash"),
+                selected: method == PayMethod.cash,
+                expanded: true,
+                onTap: () => setState(() => method = PayMethod.cash),
               ),
               const SizedBox(width: 10),
-              Expanded(
-                child: ChoiceChip(
-                  label: Text(I18n.t(lang, "upi")),
-                  selected: method == PayMethod.upi,
-                  selectedColor: AppColors.primary,
-                  labelStyle: TextStyle(
-                    color: method == PayMethod.upi ? Colors.white : AppColors.ink,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  onSelected: (_) => setState(() => method = PayMethod.upi),
-                ),
+              SelectChip(
+                label: I18n.t(lang, "upi"),
+                selected: method == PayMethod.upi,
+                expanded: true,
+                onTap: () => setState(() => method = PayMethod.upi),
               ),
             ],
           ),

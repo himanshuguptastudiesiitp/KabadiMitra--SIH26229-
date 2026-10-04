@@ -15,9 +15,7 @@ class UserScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = context.watch<AppStore>();
     final lang = store.language;
-    final paid = store.lots
-        .where((l) => l.paymentStatus == PaymentStatus.paid)
-        .fold(0.0, (s, l) => s + l.amount);
+    final paid = store.lots.where((l) => l.paymentStatus.name == "paid").fold(0.0, (s, l) => s + l.amount);
 
     return Scaffold(
       appBar: AppBar(
@@ -26,9 +24,7 @@ class UserScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SettingsScreen()),
-            ),
+                context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
         ],
       ),
@@ -46,20 +42,17 @@ class UserScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
+          Text(store.displayName,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headlineMedium),
           Text(
-            store.displayName,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          Text(
-            store.role == UserRole.collector
-                ? I18n.t(lang, "roleCollector")
-                : store.role == UserRole.recycler
-                    ? I18n.t(lang, "roleRecycler")
-                    : I18n.t(lang, "roleAdmin"),
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700),
-          ),
+              store.role == UserRole.collector
+                  ? I18n.t(lang, "roleCollector")
+                  : store.role == UserRole.recycler
+                      ? I18n.t(lang, "roleRecycler")
+                      : I18n.t(lang, "roleAdmin"),
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -67,10 +60,8 @@ class UserScreen extends StatelessWidget {
                 child: AppCard(
                   child: Column(
                     children: [
-                      Text(
-                        "${store.lots.length}",
-                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
-                      ),
+                      Text("${store.lots.length}",
+                          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
                       Text(I18n.t(lang, "lots"), style: Theme.of(context).textTheme.bodyMedium),
                     ],
                   ),
@@ -81,10 +72,8 @@ class UserScreen extends StatelessWidget {
                 child: AppCard(
                   child: Column(
                     children: [
-                      Text(
-                        inr(paid),
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-                      ),
+                      Text(inr(paid),
+                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
                       Text(I18n.t(lang, "earnings"), style: Theme.of(context).textTheme.bodyMedium),
                     ],
                   ),

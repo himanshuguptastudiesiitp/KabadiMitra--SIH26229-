@@ -3,8 +3,7 @@ analyzer:
     - build/**
     - android/**
 include: package:flutter_lints/flutter.yaml
-
 linter:
   rules:
-    prefer_const_constructors: false
-    prefer_const_literals_to_create_immutables: false
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true

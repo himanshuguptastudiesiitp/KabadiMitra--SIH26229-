@@ -29,14 +29,13 @@ class HomeScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
           children: [
-            Text(
-              "${I18n.t(lang, "ramRam")}, ${store.displayName}",
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            Text("${I18n.t(lang, "ramRam")}, ${store.displayName}",
+                style: Theme.of(context).textTheme.bodyMedium),
             Text(I18n.t(lang, "appName"), style: Theme.of(context).textTheme.headlineLarge),
             Text(I18n.t(lang, "chainSub"), style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 12),
             PipelineStrip(
+              lang: lang,
               current: store.activeLot != null
                   ? LotStatusLike.valued
                   : LotStatusLike.collected,
@@ -47,19 +46,12 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    I18n.t(lang, "todayEarned"),
-                    style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600),
-                  ),
+                  Text(I18n.t(lang, "todayEarned"),
+                      style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
-                  Text(
-                    inr(earned),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 36,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
+                  Text(inr(earned),
+                      style: const TextStyle(
+                          color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
                 ],
               ),
             ),
@@ -68,9 +60,7 @@ class HomeScreen extends StatelessWidget {
               label: I18n.t(lang, "openCamera"),
               icon: Icons.camera_alt,
               onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const CameraScreen()),
-              ),
+                  context, MaterialPageRoute(builder: (_) => const CameraScreen())),
             ),
             const SizedBox(height: 16),
             GridView.count(
@@ -107,55 +97,45 @@ class HomeScreen extends StatelessWidget {
             if (recent.isEmpty)
               Text(I18n.t(lang, "noLots"), style: Theme.of(context).textTheme.bodyMedium)
             else
-              ...recent.map(
-                (lot) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: AppCard(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+              ...recent.map((lot) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: AppCard(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(I18n.materialLabel(lang, lot.category),
+                                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                                Text("${lot.weightKg} ${I18n.t(lang, "kgUnit")} · ${shortDate(lot.createdAt)}",
+                                    style: Theme.of(context).textTheme.bodyMedium),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
+                              Text(inr(lot.amount),
+                                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
                               Text(
-                                I18n.materialLabel(lang, lot.category),
-                                style: const TextStyle(fontWeight: FontWeight.w700),
-                              ),
-                              Text(
-                                "${lot.weightKg} kg · ${shortDate(lot.createdAt)}",
-                                style: Theme.of(context).textTheme.bodyMedium,
+                                lot.paymentStatus == PaymentStatus.paid
+                                    ? I18n.t(lang, "paidDone")
+                                    : I18n.statusLabel(lang, lot.status),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: lot.paymentStatus == PaymentStatus.paid
+                                      ? AppColors.success
+                                      : AppColors.warning,
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              inr(lot.amount),
-                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-                            ),
-                            Text(
-                              lot.paymentStatus == PaymentStatus.paid
-                                  ? I18n.t(lang, "paidDone")
-                                  : (lot.status == LotStatus.offered
-                                      ? I18n.t(lang, "pendingPay")
-                                      : lot.status.name),
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: lot.paymentStatus == PaymentStatus.paid
-                                    ? AppColors.success
-                                    : AppColors.warning,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-              ),
+                  )),
           ],
         ),
       ),
@@ -178,12 +158,7 @@ class _Quick extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Icon(icon, size: 28, color: AppColors.primary),
-          Text(
-            label,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-          ),
+          Text(label, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
         ],
       ),
     );
